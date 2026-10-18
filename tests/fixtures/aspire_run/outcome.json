@@ -1,0 +1,68 @@
+{
+  "cumulative_reward": 2.0,
+  "environment_terminated": true,
+  "environment_truncated": false,
+  "error": null,
+  "finalization_errors": [],
+  "program_ok": true,
+  "protocol_success": null,
+  "schema_version": "1.0",
+  "simulator_duration_s": 19.7,
+  "steps_executed": 394,
+  "success_observed_step": null,
+  "task_success": true,
+  "termination_description": "The environment ended after benchmark success.",
+  "termination_reason": "task_succeeded",
+  "timing": {
+    "attributed_s": 34.496532,
+    "buckets": {
+      "adapter_step": {
+        "calls": 394,
+        "seconds": 12.756531
+      },
+      "finalize": {
+        "calls": 1,
+        "seconds": 0.003347
+      },
+      "keyframe": {
+        "calls": 28,
+        "seconds": 2.081756
+      },
+      "overlay": {
+        "calls": 2,
+        "seconds": 1.513217
+      },
+      "provider.pyroki": {
+        "calls": 11,
+        "seconds": 5.182841
+      },
+      "provider.sam3": {
+        "calls": 2,
+        "seconds": 3.252202
+      },
+      "record_step": {
+        "calls": 394,
+        "seconds": 0.143728
+      },
+      "reset": {
+        "calls": 1,
+        "seconds": 8.379713
+      },
+      "setup": {
+        "calls": 1,
+        "seconds": 0.000123
+      },
+      "trace_write": {
+        "calls": 272,
+        "seconds": 0.139988
+      },
+      "video_encode": {
+        "calls": 396,
+        "seconds": 1.043087
+      }
+    },
+    "unattributed_s": 0.562055,
+    "wall_s": 35.058588
+  },
+  "wall_duration_s": 35.058587580919266
+}

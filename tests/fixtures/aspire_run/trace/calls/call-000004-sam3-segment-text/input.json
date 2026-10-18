@@ -1,0 +1,64 @@
+{
+  "args": [
+    {
+      "$type": "CameraObservation",
+      "camera_pose": {
+        "$type": "Pose",
+        "frame": "robot_base",
+        "position": {
+          "$array_inline": [
+            1.4965773716836135,
+            5.216182733499864e-07,
+            0.65
+          ],
+          "dtype": "float64",
+          "shape": [
+            3
+          ]
+        },
+        "quaternion_wxyz": {
+          "$array_inline": [
+            -0.34323072246337577,
+            0.6182166363517069,
+            0.6182176496305745,
+            -0.34323140791672757
+          ],
+          "dtype": "float64",
+          "shape": [
+            4
+          ]
+        }
+      },
+      "depth_shape": [
+        512,
+        800
+      ],
+      "frame": "camera/agentview",
+      "intrinsics": [
+        [
+          618.0386719675123,
+          0.0,
+          400.0
+        ],
+        [
+          0.0,
+          618.0386719675123,
+          256.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "rgb_shape": [
+        512,
+        800,
+        3
+      ],
+      "timestamp_s": 0.0
+    },
+    "blue soup can"
+  ],
+  "kwargs": {}
+}

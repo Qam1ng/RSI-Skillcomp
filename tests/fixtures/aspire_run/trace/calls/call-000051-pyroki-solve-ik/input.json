@@ -1,0 +1,117 @@
+{
+  "args": [
+    {
+      "$type": "Pose",
+      "frame": "robot_base",
+      "position": {
+        "$array_inline": [
+          0.4101214316783718,
+          0.09749930021596796,
+          0.36
+        ],
+        "dtype": "float64",
+        "shape": [
+          3
+        ]
+      },
+      "quaternion_wxyz": {
+        "$array_inline": [
+          -0.0033358147520175757,
+          0.9995969128761895,
+          0.009595402999084636,
+          -0.026510608246836247
+        ],
+        "dtype": "float64",
+        "shape": [
+          4
+        ]
+      }
+    },
+    {
+      "$type": "RobotState",
+      "base_frame": "robot_base",
+      "embodiment": "libero",
+      "end_effector_poses": {
+        "primary": {
+          "$type": "Pose",
+          "frame": "robot_base",
+          "position": {
+            "$array_inline": [
+              0.4101214316783718,
+              -0.09002167036837336,
+              0.2656024787295041
+            ],
+            "dtype": "float64",
+            "shape": [
+              3
+            ]
+          },
+          "quaternion_wxyz": {
+            "$array_inline": [
+              -0.0033358147520175757,
+              0.9995969128761895,
+              0.009595402999084636,
+              -0.026510608246836247
+            ],
+            "dtype": "float64",
+            "shape": [
+              4
+            ]
+          }
+        }
+      },
+      "gripper_positions": {
+        "primary": 0.7576923809894435
+      },
+      "joint_names": {
+        "primary": [
+          "robot0_joint1",
+          "robot0_joint2",
+          "robot0_joint3",
+          "robot0_joint4",
+          "robot0_joint5",
+          "robot0_joint6",
+          "robot0_joint7"
+        ]
+      },
+      "joint_positions": {
+        "primary": {
+          "$array_inline": [
+            -0.07793715121185124,
+            -0.26711653448284745,
+            -0.1354212341359288,
+            -2.540473080011569,
+            -0.05099026907302384,
+            2.221746673263429,
+            0.591026950482079
+          ],
+          "dtype": "float64",
+          "shape": [
+            7
+          ]
+        }
+      },
+      "joint_velocities": {
+        "primary": {
+          "$array_inline": [
+            -6.434880882237194e-05,
+            -0.009146977861947523,
+            0.000306970764293627,
+            0.0037828349551963843,
+            -0.0005041736045441107,
+            -0.04141504259195045,
+            0.00032435104097894844
+          ],
+          "dtype": "float64",
+          "shape": [
+            7
+          ]
+        }
+      },
+      "timestamp_s": 10.950000000000001
+    }
+  ],
+  "kwargs": {
+    "arm": "primary"
+  }
+}

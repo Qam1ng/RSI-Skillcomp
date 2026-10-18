@@ -1,0 +1,8 @@
+{
+  "args": [
+    "the basket"
+  ],
+  "kwargs": {
+    "camera_name": "agentview"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "args": [
+    {
+      "$type": "Pose",
+      "frame": "robot_base",
+      "position": {
+        "$array_inline": [
+          0.4088484902475471,
+          -0.08987936103092453,
+          0.26314847439056077
+        ],
+        "dtype": "float64",
+        "shape": [
+          3
+        ]
+      },
+      "quaternion_wxyz": {
+        "$array_inline": [
+          -0.00317532523115181,
+          0.9995253486662803,
+          0.008717273513766007,
+          -0.029376926757465022
+        ],
+        "dtype": "float64",
+        "shape": [
+          4
+        ]
+      }
+    }
+  ],
+  "kwargs": {
+    "arm": "primary",
+    "strategy": null
+  }
+}

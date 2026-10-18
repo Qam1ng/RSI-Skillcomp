@@ -1,0 +1,11 @@
+{
+  "args": [
+    {
+      "$type": "PointCloud",
+      "frame": "robot_base",
+      "has_colors": true,
+      "point_count": 1472
+    }
+  ],
+  "kwargs": {}
+}
