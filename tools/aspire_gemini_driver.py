@@ -32,7 +32,7 @@ def gemini(model: str, key: str, parts: list[str]) -> tuple[str, dict]:
                                  headers={"Content-Type": "application/json"})
     for attempt in range(3):
         try:
-            with urllib.request.urlopen(req, timeout=180) as r:
+            with urllib.request.urlopen(req, timeout=300) as r:
                 d = json.loads(r.read())
             text = d["candidates"][0]["content"]["parts"][0]["text"]
             usage = d.get("usageMetadata", {})
@@ -40,7 +40,7 @@ def gemini(model: str, key: str, parts: list[str]) -> tuple[str, dict]:
         except Exception as e:  # noqa: BLE001
             if attempt == 2:
                 raise
-            time.sleep(10 * (attempt + 1))
+            time.sleep(15 * (attempt + 1))
     raise RuntimeError("unreachable")
 
 
@@ -86,6 +86,16 @@ def failure_digest(run_dir: Path) -> str:
         lines.append("call sequence: " + " -> ".join(names[:40]))
         if fails:
             lines.append("failed calls: " + ", ".join(fails))
+        # 为每个失败的顶层调用附上其 output.json(含失败原因)
+        n_attached = 0
+        for line2 in open(ev):
+            d2 = json.loads(line2)
+            if (d2.get("category") == "program" and d2.get("parent_id") is None
+                    and d2.get("event") == "span_end" and not d2.get("ok") and n_attached < 3):
+                num = d2["span_id"].rsplit("-", 1)[-1]
+                for m in (run_dir / "trace" / "calls").glob(f"call-{num}-*/output.json"):
+                    lines.append(f"failed {d2['name']} output: " + m.read_text()[:400])
+                    n_attached += 1
     pub = run_dir / "source" / "public_result.json"
     if pub.exists():
         lines.append("program public result: " + pub.read_text()[:800])
@@ -106,6 +116,8 @@ def main() -> int:
     ap.add_argument("--out", required=True)
     ap.add_argument("--model", default="gemini-flash-latest")
     ap.add_argument("--max-rounds", type=int, default=3)
+    ap.add_argument("--example", action="append", default=[],
+                    help="成功程序样例文件(别的任务的)，作为 API 用法接地材料，可重复")
     args = ap.parse_args()
 
     key = os.environ.get("GEMINI_API_KEY")
@@ -117,11 +129,17 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     api_doc = (aspire / "docs" / "api-reference.md").read_text()
 
-    meter = {"model": args.model, "rounds": []}
+    examples = []
+    for ex in args.example:
+        examples.append("=== WORKING EXAMPLE (a DIFFERENT task; copy its API usage patterns, "
+                        "not its goal) ===\n```python\n" + Path(ex).read_text() + "\n```")
+
+    meter = {"model": args.model, "driver": "v2" if examples else "v1",
+             "examples": args.example, "rounds": []}
     digest = None
     t0 = time.time()
     for rnd in range(1, args.max_rounds + 1):
-        parts = [RULES, "=== API REFERENCE ===\n" + api_doc,
+        parts = [RULES, "=== API REFERENCE ===\n" + api_doc, *examples,
                  f"=== TASK ===\nBenchmark LIBERO-Pro, suite {args.suite}, task {args.task_id}.\n"
                  f"Task instruction: {args.task_language}\n"
                  f"Cameras available: agentview (scene), robot0_eye_in_hand (wrist)."]
@@ -143,6 +161,7 @@ def main() -> int:
         meter["rounds"][-1].update({"run_dir": str(run_dir), "task_success": ok,
                                     "termination": outcome["termination_reason"]})
         print(f"[round {rnd}] success={ok} termination={outcome['termination_reason']} run={run_dir.name}")
+        (out / "meter.json").write_text(json.dumps(meter, indent=1))
         if ok:
             break
         digest = failure_digest(run_dir)
