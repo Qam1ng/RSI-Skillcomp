@@ -18,8 +18,10 @@ from .lifted import LiftedMotif
 # cap-harness 程序层公共 API（来自 api-reference 与真实轨迹；合成的宏只准用这些名字）
 ASPIRE_API_WHITELIST = {
     "open_gripper", "close_gripper", "get_robot_state", "localize_object",
-    "move_to_pose", "segment_text", "generate_grasps", "plan_motion", "Pose",
-    "MotionStrategy",
+    "move_to_pose", "segment_text", "generate_grasps", "select_grasp",
+    "plan_motion", "Pose", "MotionStrategy",
+    # 2026-10-19 探针实测：沙箱支持异常机制（此前"无异常机制"系本门误伤）；hasattr 确认被禁
+    "ValueError", "RuntimeError", "Exception",
 }
 
 PROMPT_TEMPLATE = """You are distilling a reusable robot SKILL FUNCTION from verified programs.
