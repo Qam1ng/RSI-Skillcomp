@@ -3,8 +3,8 @@
  "params": [
   "object_name"
  ],
- "pre": "PRE: The target object is visible in agentview and reachable by the robot arm.",
- "eff": "EFF: The target object is grasped by the gripper and lifted above its initial position.",
+ "pre": "PRE: The target object is visible in the scene and reachable by the robot.",
+ "eff": "EFF: The target object is securely grasped and lifted above the workspace.",
  "motif": [
   "localize_object",
   "get_robot_state",
@@ -27,9 +27,25 @@
  ],
  "model": "gemini-flash-latest",
  "synthesis_usage": {
-  "prompt": 4623,
-  "output": 1238,
+  "prompt": 4843,
+  "output": 870,
   "calls": 1
  },
- "status": "pending_execution_verification"
+ "status": "execution_verified_EFF",
+ "verification": {
+  "date": "2026-10-19",
+  "protocol": "goal_task/2, unseen seeds 56-60, seeded layouts, macro embedded in assembled program",
+  "result": "5/5 seeds: all 8 macro calls ok (localize->state->pregrasp->descend->close->state->state->lift)",
+  "scope": "EFF only (object grasped and lifted). Full-task place stage failed in hand-written scaffold, not in macro.",
+  "history": [
+   "v1: 0/5 program_error (array truthiness `if not points:`) -> evidence returned",
+   "v2: seed56 macro all-ok, seeds57-60 descend FAIL (generic grasp recipe) -> evidence returned (neck strategy)",
+   "v3: 5/5 macro all-ok"
+  ],
+  "synthesis_total_usage": {
+   "calls": 3,
+   "prompt_tokens": 14235,
+   "output_tokens": 3307
+  }
+ }
 }

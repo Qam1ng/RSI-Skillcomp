@@ -52,6 +52,8 @@ def main() -> int:
     ap.add_argument("--model", default="gemini-flash-latest")
     ap.add_argument("--out", default="macros")
     ap.add_argument("--min-tasks", type=int, default=2)
+    ap.add_argument("--evidence", default=None,
+                    help="上一轮执行验证的失败证据文件,内容将附进合成提示")
     args = ap.parse_args()
 
     traces = []
@@ -78,8 +80,14 @@ def main() -> int:
         print("缺 GEMINI_API_KEY", file=sys.stderr)
         return 2
     sources = [Path(s).expanduser().read_text() for s in args.sources]
-    mc = synthesize_macro(pick, sources, args.fn, args.params,
-                          llm=gemini_llm(args.model, key))
+    llm = gemini_llm(args.model, key)
+    if args.evidence:
+        ev = Path(args.evidence).expanduser().read_text()
+        base = llm
+        def llm(prompt, _b=base, _e=ev):
+            return _b(prompt + "\n\n=== EXECUTION EVIDENCE FROM PREVIOUS VERSION (fix these) ===\n"
+                      + _e)
+    mc = synthesize_macro(pick, sources, args.fn, args.params, llm=llm)
 
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
     (out / f"{mc.name}.py").write_text(mc.code)
