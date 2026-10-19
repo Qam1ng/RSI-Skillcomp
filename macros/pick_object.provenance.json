@@ -1,0 +1,35 @@
+{
+ "fn": "pick_object",
+ "params": [
+  "object_name"
+ ],
+ "pre": "PRE: The target object is visible in agentview and reachable by the robot arm.",
+ "eff": "EFF: The target object is grasped by the gripper and lifted above its initial position.",
+ "motif": [
+  "localize_object",
+  "get_robot_state",
+  "move_to_pose",
+  "move_to_pose",
+  "close_gripper",
+  "get_robot_state",
+  "get_robot_state",
+  "move_to_pose"
+ ],
+ "episode_coverage": 20,
+ "task_coverage": 2,
+ "tasks": [
+  "libero_goal_task/2",
+  "libero_object_swap/0"
+ ],
+ "sources": [
+  "/home/qing/skillcomp_data/winning_programs/goal2.py",
+  "/home/qing/skillcomp_data/winning_programs/spatial2.py"
+ ],
+ "model": "gemini-flash-latest",
+ "synthesis_usage": {
+  "prompt": 4623,
+  "output": 1238,
+  "calls": 1
+ },
+ "status": "pending_execution_verification"
+}
