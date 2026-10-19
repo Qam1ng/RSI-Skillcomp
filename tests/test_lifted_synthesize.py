@@ -123,3 +123,22 @@ class TestSynthesize(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestFailedTailSlack(unittest.TestCase):
+    def test_tail_slack_admits_release_quirk(self):
+        from skillcomp.lifted import mine_lifted as ml
+        seq_names = [("get_robot_state", ()), ("move_to_pose", ("P",)),
+                     ("open_gripper", ()), ("get_robot_state", ()), ("move_to_pose", ("Q",))]
+        def tr(task):
+            steps = [Step(n, a, frozenset(), frozenset(), True) for n, a in seq_names]
+            # 尾部两步失败旗(底盘怪癖)
+            steps[-1] = Step("move_to_pose", ("Q",), frozenset(), frozenset(), False)
+            steps[-3] = Step("open_gripper", (), frozenset(), frozenset(), False)
+            return Trace(task=task, steps=steps, success=True)
+        traces = [tr(t) for t in ("A/0", "B/0", "C/0")]
+        self.assertEqual(ml(traces, min_len=5, max_len=5, min_episode_coverage=3,
+                            min_task_coverage=3), [])  # 默认仍严格
+        motifs = ml(traces, min_len=5, max_len=5, min_episode_coverage=3,
+                    min_task_coverage=3, allow_failed_tail=3)
+        self.assertTrue(motifs and motifs[0].names == tuple(n for n, _ in seq_names))

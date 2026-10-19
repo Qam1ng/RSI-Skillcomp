@@ -1,0 +1,44 @@
+{
+ "fn": "place_into",
+ "params": [
+  "target_name",
+  "held_below_m"
+ ],
+ "pre": "PRE: The robot is holding an object and needs to place it into the specified target.",
+ "eff": "EFF: The held object is released inside or on top of the target, and the gripper has retreated upwards.",
+ "motif": [
+  "open_gripper",
+  "localize_object",
+  "localize_object",
+  "get_robot_state",
+  "move_to_pose",
+  "move_to_pose",
+  "close_gripper",
+  "get_robot_state"
+ ],
+ "episode_coverage": 10,
+ "task_coverage": 2,
+ "tasks": [
+  "libero_goal_task/2",
+  "libero_spatial_swap/2"
+ ],
+ "sources": [
+  "/home/qing/skillcomp_data/winning_programs/goal2.py",
+  "/home/qing/skillcomp_data/winning_programs/object_swap_example.py"
+ ],
+ "model": "gemini-pro-latest",
+ "synthesis_usage": {
+  "prompt": 4323,
+  "output": 875,
+  "calls": 1
+ },
+ "status": "execution_verified",
+ "execution_verification": {
+  "suite": "libero_goal_task",
+  "task_id": 2,
+  "seeds": "56-60 (unseen, init-mode seeded)",
+  "passes": "5/5 task_success per benchmark checker",
+  "where": "ucla A6000, verify_pure3, 2026-10-19"
+ },
+ "note": "pro one-shot after flash v2 truncation autopsy; release verified via gripper width"
+}

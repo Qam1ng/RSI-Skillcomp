@@ -46,6 +46,7 @@ def mine_lifted(
     min_episode_coverage: int = 3,
     min_task_coverage: int = 2,
     require_success_window: bool = True,
+    allow_failed_tail: int = 0,
 ) -> list[LiftedMotif]:
     """在成功轨迹里挖技能名层的连续段。
 
@@ -62,8 +63,14 @@ def mine_lifted(
         seen_in_ep: set[tuple] = set()
         for L in range(min_len, min(max_len, len(names)) + 1):
             for i in range(len(names) - L + 1):
-                if require_success_window and not all(s.success for s in t.steps[i:i + L]):
-                    continue
+                if require_success_window:
+                    window = t.steps[i:i + L]
+                    # 底盘怪癖(2026-10-19 实测):成功轨迹的尾部(松爪/被腰斩的撤离)
+                    # 系统性报 ok=False。allow_failed_tail 允许成功轨迹最后 K 步带失败旗。
+                    tail_start = len(t.steps) - allow_failed_tail
+                    if not all(st.success or (t.success and i + j >= tail_start)
+                               for j, st in enumerate(window)):
+                        continue
                 key = tuple(names[i:i + L])
                 occ[key].append((ti, i))
                 if key not in seen_in_ep:

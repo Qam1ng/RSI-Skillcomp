@@ -11,3 +11,6 @@
 | 2026-10-19 | b 档战役：3 任务 2 成（spatial2 一发即中 6.3k+2.1k tok；goal2 两轮收敛 13.9k+2.8k tok；抽屉 5 轮未成 ~30k tok） | 驱动 v3（样例接地），seed 51，gemini-flash-latest | 各 meter.json（ucla gate3v3/c_spatial2/c_goal2）|
 | 2026-10-19 | 收割 10/10（两获胜程序 × seeds51–55，seeded 布局） | 零 API | harvest_*/summary.json；本地 harvest_* |
 | 2026-10-19 | 跨 3 任务 25 集：技能名层连续段（localize→state→move 等）覆盖 25/25；接地层跨任务命中 0 | 1 人写 + 2 agent 写程序 | journal/20261019_campaign.md |
+| 2026-10-19 | 宏 pick_object 过执行门 5/5（EFF 口径，未见过的 seeds 56–60） | libero_goal_task/2，seeded；flash 两轮证据回流收敛 | verify_macro3/summary.json（ucla）；journal/20261019_macros.md |
+| 2026-10-19 | 纯宏整任务 0/5 两次（flash 整体重生成）：place v2 代码退化成注释返回 None；pick v4 重抽几何回归 | 同上口径，verify_pure/verify_pure2 | journal/20261019_macros.md |
+| 2026-10-19 | **纯宏整任务 5/5**：程序正文 = 2 次宏调用（pick_object + place_into，传递 below_grasp_m），任务判定来自基准检查器；每集 17 次原子调用在宏内执行 | libero_goal_task/2，未见过的 seeds 56–60，seeded；合成 gemini-pro-latest 各 1 次调用（pick 为"最小差分编辑"5.7k+0.9k tok，place 一发 4.3k+0.9k tok） | verify_pure3/summary.json（ucla）；macros/*.provenance.json |

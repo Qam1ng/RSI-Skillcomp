@@ -29,6 +29,7 @@ def pick_object(object_name):
         grasp_y = ys[count // 2]
 
     grasp_z = z_top - 0.035
+    below_grasp_m = grasp_z - zs[int(count * 0.02)]
 
     state = get_robot_state()
     downward = state.end_effector_poses["primary"].quaternion_wxyz
@@ -74,4 +75,5 @@ def pick_object(object_name):
         "grasp_pose": grasp_pose,
         "lift_pose": lift_pose,
         "gripper_position": gripper_pos,
+        "below_grasp_m": below_grasp_m,
     }

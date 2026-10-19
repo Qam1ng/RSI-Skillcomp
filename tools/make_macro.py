@@ -52,6 +52,7 @@ def main() -> int:
     ap.add_argument("--model", default="gemini-flash-latest")
     ap.add_argument("--out", default="macros")
     ap.add_argument("--min-tasks", type=int, default=2)
+    ap.add_argument("--allow-failed-tail", type=int, default=0)
     ap.add_argument("--evidence", default=None,
                     help="上一轮执行验证的失败证据文件,内容将附进合成提示")
     args = ap.parse_args()
@@ -62,7 +63,8 @@ def main() -> int:
             traces.append(export_trace(run))
     print(f"语料: {len(traces)} 集, {len(set(t.task for t in traces))} 个任务")
 
-    motifs = mine_lifted(traces, min_task_coverage=args.min_tasks)
+    motifs = mine_lifted(traces, min_task_coverage=args.min_tasks,
+                         allow_failed_tail=args.allow_failed_tail)
     print("—— 升维动机（前 8）——")
     print(motif_report(motifs, top=8))
     pick = None
