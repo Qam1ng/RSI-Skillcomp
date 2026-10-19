@@ -2,6 +2,7 @@ def place_into(target_name, held_below_m=0.25):
     """
     PRE: The robot is holding an object and needs to place it into the specified target.
     EFF: The held object is released inside or on top of the target, and the gripper has retreated upwards.
+    NOTE: pass the held object's extent below the grasp as held_below_m — use pick_object's returned below_grasp_m.
     """
     target = localize_object(target_name, camera_name="agentview")
     if not target.ok:
