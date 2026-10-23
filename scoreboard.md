@@ -15,3 +15,4 @@
 | 2026-10-19 | 纯宏整任务 0/5 两次（flash 整体重生成）：place v2 代码退化成注释返回 None；pick v4 重抽几何回归 | 同上口径，verify_pure/verify_pure2 | journal/20261019_macros.md |
 | 2026-10-19 | **纯宏整任务 5/5**：程序正文 = 2 次宏调用（pick_object + place_into，传递 below_grasp_m），任务判定来自基准检查器；每集 17 次原子调用在宏内执行 | libero_goal_task/2，未见过的 seeds 56–60，seeded；合成 gemini-pro-latest 各 1 次调用（pick 为"最小差分编辑"5.7k+0.9k tok，place 一发 4.3k+0.9k tok） | verify_pure3/summary.json（ucla）；macros/*.provenance.json |
 | 2026-10-19 | 口1 试点（配对，双失败但次级信号强）：A 对照 5 轮 0 成（程序 54–58 调用/轮，输出 2.1–2.3k tok/轮，973s）；B 目录臂 5 轮 0 成，但 3/5 轮主动采用宏（6–14 调用、输出 193–249 tok，约 10 倍短），轮间在"宏↔裸API"间振荡，总墙钟 260s（3.7 倍快） | libero_goal_task/1"Put the plate on the stove"（预注册规则选取），seed 51，flash，≤5 轮，环内无人 | port1/arm{A,B}/meter.json（ucla）；doc/active/exp_port1_catalog_injection.md |
+| 2026-10-21 | 纯宏整任务重放 5/5（带录像），steps 214–238 | libero_goal_task/2，seeds 56–60，seeded，零 API，ucla GPU2 | ~/skillcomp_data/demo_pure3/（视频在 videos/）；journal/20261021_demo_videos.md |

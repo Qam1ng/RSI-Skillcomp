@@ -31,6 +31,9 @@ class SkillCard:
     body: tuple[Call, ...] = ()  # macro 的成分序列；atomic 为空
     origin: str = "declared"  # "declared" | "observed"
     provenance: dict = field(default_factory=dict)  # 支持数、来源轨迹、成功统计
+    carrier: str = "code"  # "code" | "lora"（共享底座+LoRA 的 VLA expert）
+    carrier_meta: dict = field(default_factory=dict)  # lora: backbone_id/adapter_path/data_group/parent_version
+    version: int = 1  # 追加式版本号；vN 与 vN+1 并存，禁覆盖
 
     def call_key(self) -> Call:
         return (self.name, self.args)
@@ -57,34 +60,58 @@ class SkillCard:
             body=tuple((n, tuple(a)) for n, a in d.get("body", [])),
             origin=d.get("origin", "declared"),
             provenance=d.get("provenance", {}),
+            carrier=d.get("carrier", "code"),
+            carrier_meta=d.get("carrier_meta", {}),
+            version=d.get("version", 1),
         )
 
 
 class Library:
-    """技能库：atomic + macro 的统一目录。harness 的规划者只看 catalog()。"""
+    """技能库：atomic + macro 的统一目录，**追加式版本化**。
+
+    防遗忘是架构性质：admit 只追加，vN 与 vN+1 并存，禁止覆盖同版本。
+    harness 的规划者只看 catalog()（每技能最新版）；回滚 = 指回旧版本。
+    """
 
     def __init__(self) -> None:
-        self._cards: dict[Call, SkillCard] = {}
+        self._versions: dict[Call, list[SkillCard]] = {}
 
     def admit(self, card: SkillCard) -> None:
-        self._cards[card.call_key()] = card
+        chain = self._versions.setdefault(card.call_key(), [])
+        if any(c.version == card.version for c in chain):
+            raise ValueError(
+                f"禁止覆盖：{card.name} v{card.version} 已在库中（追加请用新版本号）")
+        if chain and card.version <= max(c.version for c in chain):
+            raise ValueError(
+                f"版本必须递增：{card.name} 已有 v{max(c.version for c in chain)}")
+        chain.append(card)
 
     def get(self, name: str, args: tuple[str, ...] = ()) -> SkillCard:
-        return self._cards[(name, args)]
+        return self._versions[(name, args)][-1]
+
+    def get_version(self, name: str, args: tuple[str, ...], version: int) -> SkillCard:
+        for c in self._versions[(name, args)]:
+            if c.version == version:
+                return c
+        raise KeyError(f"{name} v{version} 不在库中")
+
+    def history(self, name: str, args: tuple[str, ...] = ()) -> list[SkillCard]:
+        return list(self._versions.get((name, args), []))
 
     def has(self, name: str, args: tuple[str, ...] = ()) -> bool:
-        return (name, args) in self._cards
+        return (name, args) in self._versions
 
     def catalog(self) -> list[SkillCard]:
-        return list(self._cards.values())
+        return [chain[-1] for chain in self._versions.values()]
 
     def macros(self) -> list[SkillCard]:
-        return [c for c in self._cards.values() if c.kind == "macro"]
+        return [c for c in self.catalog() if c.kind == "macro"]
 
     # ---------- 持久化 ----------
     def save(self, path: str | Path) -> None:
+        cards = [c for chain in self._versions.values() for c in chain]
         with open(path, "w") as f:
-            json.dump([c.to_dict() for c in self._cards.values()], f, ensure_ascii=False, indent=1)
+            json.dump([c.to_dict() for c in cards], f, ensure_ascii=False, indent=1)
 
     @staticmethod
     def load(path: str | Path) -> "Library":
