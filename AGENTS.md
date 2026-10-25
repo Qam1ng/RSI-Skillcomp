@@ -35,7 +35,7 @@ skillcomp/
   ledger.py       逐轮台账：每技能分数/裕度/花费序列（库级"梯度"）
   casestore.py    病历档案：失败归因三类（圈内/圈外/planner）+ 场景特征
   context.py      Context Assembly（Q1 实验面）：检索+去重+预算装箱
-  triage.py       店长规则版：三叉裁决 retry/refine/split（规则预注册）
+  triage.py       三选一裁决 retry/refine/split（规则预注册）
   gate.py         准入门裁定记录 + 证据回流轮数预算（≤2 轮硬停）
   executors.py    载体→执行器路由：CodeMacroExecutor / VLAExecutor（π0.5 待接）
   adapters/       harness 适配器（aspire.py 已落地）
@@ -49,11 +49,12 @@ scoreboard.md     已确立的数字（带出处）
 ## 当前状态（2026-10-23）
 
 - 代码技能双环已在 ASPIRE/LIBERO-Pro 实证：纯宏整任务 5/5（未见种子，基准判定）；
-  口1 试点显示目录被自愿采用（程序 54→6 调用）。
+  目录注入试点显示规划 agent 自愿采用大技能（程序 54→6 调用）。
 - 重整第 1–5 步落地：版本化库、测量层（尺子/台账/病历）、Context Assembly v1、
   triage 规则版、门记录、执行器接口。33/33 测试过。
 - 待办：① ucla 实测本底噪声（尺子登记后首件事）；② 从 port1/verify_* 工件回填
   Case Store；③ Phase 2 = π0.5（官方 pi05_base，JAX 分支才有 LoRA），训练
   codebase 由合作方重整，本仓只接 VLAExecutor/trainers 接口。
-- 定位语（给论文）：库式 RSI 的优化器——四层信号（Δ台账/断点分类/飞行记录/
-  稠密纠正），三叉裁决含结构动作，评估计费下的预算分配。
+- 论文定位（白话版）：给"靠技能库自我改进的机器人系统"做决策机制——
+  用四种信号（逐轮分数变化、失败归因分类、执行日志诊断、人工纠正数据）
+  决定每轮修哪个技能、是修还是拆分、以及在"评测要花钱"的前提下花多少。
