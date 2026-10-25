@@ -36,3 +36,6 @@
 11. 必须带 `LIBERO_CONFIG_PATH=<repo>/.libero`，否则读到 `~/.libero/config.yaml`
     （外项目遗留，缺 bddl_files）全批报错。
 12. 服务就绪探测用 `/openapi.json`，不是 `/health`。
+
+13. **禁止下划线开头的名字**：程序含 `_x` 这类私有名会被整体拒绝
+    （"program rejected: private and dunder names are not allowed"，2026-10-25 实测）。
