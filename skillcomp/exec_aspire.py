@@ -64,6 +64,12 @@ def _seed_spec(seeds: tuple[int, ...]) -> str:
     return " ".join(str(x) for x in s)
 
 
+def load_batch(out_name: str, battery: Battery,
+               cfg: SubstrateConfig = SubstrateConfig(), runner=_run) -> BatchResult:
+    """重读一个已经跑完的批次（不执行任何东西），供事后落账。"""
+    return _collect_results(f"{cfg.workdir}/{out_name}", battery, out_name, cfg, runner)
+
+
 def run_battery(program_local: str, battery: Battery, out_name: str,
                 cfg: SubstrateConfig = SubstrateConfig(), runner=_run) -> BatchResult:
     """把本地程序发上底盘，在该评测组的全部冻结种子上跑一批，收回结果。"""
@@ -81,9 +87,13 @@ def run_battery(program_local: str, battery: Battery, out_name: str,
         f" --summary {out_root}/summary.json"
     )
     runner(["ssh", cfg.host, remote])
+    return _collect_results(out_root, battery, program_local, cfg, runner)
 
+
+def _collect_results(out_root: str, battery: Battery, program: str,
+                     cfg: SubstrateConfig, runner) -> BatchResult:
     raw = runner(["ssh", cfg.host, f"cat {shlex.quote(out_root)}/batch-results.jsonl"])
-    res = BatchResult(battery=battery.name, program=program_local)
+    res = BatchResult(battery=battery.name, program=program)
     for line in raw.splitlines():
         if not line.strip():
             continue

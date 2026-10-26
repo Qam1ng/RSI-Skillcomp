@@ -100,3 +100,29 @@ def test_trainers_reject_code_carrier():
     code_card = SkillCard(name="pick_object", kind="macro", carrier="code")
     with pytest.raises(ValueError):
         trainers.refine(code_card, "g", "CFG")
+
+
+def test_collect_writes_ledger_and_blames_first_failed_skill(tmp_path):
+    from skillcomp import collect
+    from skillcomp.exec_aspire import BatchResult, SeedResult
+    res = BatchResult(battery="pick@goal2", program="p.py")
+    for s, ok in [(56, True), (57, False)]:
+        res.results.append(SeedResult(seed=s, task_success=ok, program_ok=True,
+                                      termination="x", run_dir=f"/r/{s}"))
+    res.stdout_reports[56] = ("{'grasp_ok': True, 'grasp_stage': 'done',"
+                              " 'margin_grasp_below_grasp_m': 0.11,"
+                              " 'placed_ok': True, 'placed_stage': 'done'}")
+    res.stdout_reports[57] = ("{'grasp_ok': True, 'grasp_stage': 'done',"
+                              " 'placed_ok': False, 'placed_stage': 'move_place',"
+                              " 'check_placed_pre_holding': True}")
+    plan = [("pick_object", "a", "grasp"), ("place_into", "b", "placed")]
+    out = collect.from_batch(res, BATTERY, plan, {"pick_object": 5, "place_into": 3},
+                             str(tmp_path / "l.jsonl"), str(tmp_path / "c.jsonl"))
+    assert out == {"entries": 2, "cases": 1}
+    from skillcomp import casestore, ledger
+    entries = ledger.read(tmp_path / "l.jsonl")
+    pick = [e for e in entries if e.skill == "pick_object"][0]
+    assert pick.passes == 2 and pick.margins["margin_grasp_below_grasp_m"] == [0.11]
+    case = casestore.read(tmp_path / "c.jsonl")[0]
+    assert case.skill == "place_into" and case.stage == "move_place"
+    assert case.kind == "in_envelope"  # PRE 满足却没兑现效果：技能分内的锅

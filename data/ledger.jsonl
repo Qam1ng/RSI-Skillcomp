@@ -1,0 +1,2 @@
+{"skill": "pick_object", "version": 5, "battery": "task@goal2", "passes": 5, "total": 5, "ts": "2026-10-25", "margins": {"margin_grasp_below_grasp_m": [0.1137, 0.1185, 0.121, 0.1195, 0.1206]}, "cost": {"rollouts": 5}, "note": "program=verify_checked2"}
+{"skill": "place_into", "version": 3, "battery": "task@goal2", "passes": 5, "total": 5, "ts": "2026-10-25", "margins": {"margin_placed_release": [0.586, 0.586, 0.4703, 0.586, 0.586]}, "cost": {"rollouts": 5}, "note": "program=verify_checked2"}
