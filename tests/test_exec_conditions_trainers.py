@@ -150,3 +150,44 @@ def test_vla_eval_commands_and_log_parse():
     assert r.successes == 3 and r.total == 4 and abs(r.rate - 0.75) < 1e-9
     assert r.per_task["open the drawer"] == (1, 2)
     assert r.per_task["turn on the stove"] == (2, 2)
+
+
+def test_loop_refuses_without_floor_and_pauses_on_pending(tmp_path):
+    from skillcomp import loop
+    from skillcomp.battery import Battery, NoiseFloor, Registry
+    b = Battery(name="t@b", suite="s", task_id=1, seeds=(56, 57))
+    tp = loop.TaskPlan(battery=b, program_text="report = {}\nprint(report)\n",
+                       plan=[("pick_object", "a", "grasp")],
+                       versions={"pick_object": 5}, target=2)
+
+    def fake_runner(cmd):
+        import json as J
+        remote = cmd[2] if len(cmd) > 2 else ""
+        if cmd[0] == "scp" or "run-batch" in remote:
+            return ""
+        if "batch-results.jsonl" in remote:
+            rows = [{"seed": s, "task_success": False, "program_ok": True,
+                     "termination_reason": "program_completed",
+                     "run_dir": f"/r/{s}"} for s in b.seeds]
+            return "\n".join(J.dumps(r) for r in rows)
+        if "program-result.json" in remote:
+            return J.dumps({"stdout":
+                "{'grasp_ok': False, 'grasp_stage': 'grasp',"
+                " 'check_grasp_pre_holding': True}"})
+        raise AssertionError(remote)
+
+    reg = Registry()
+    import pytest as pt
+    with pt.raises(KeyError):   # 无证书拒跑
+        loop.run_round(tp, reg, 1, str(tmp_path/"l"), str(tmp_path/"c"), "t",
+                       runner=fake_runner)
+    reg.register(b)
+    reg.set_floor(NoiseFloor(battery="t@b", scores=[2, 2], total=2))
+    recs = loop.run_loop(tp, reg, max_rounds=3, ledger_path=str(tmp_path/"l"),
+                         cases_path=str(tmp_path/"c"), rounds_log=str(tmp_path/"r"),
+                         workdir_prefix="t", mode="supervised", runner=fake_runner)
+    # 第 1 轮 2 条病历不足 min_cases=3 -> hold 续跑；第 2 轮 4 条 -> refine -> 停驻
+    assert len(recs) == 2
+    assert recs[0].decisions["pick_object"]["action"] == "hold"
+    assert recs[1].pending == ["refine:pick_object"]
+    assert "停驻待批" in recs[1].note
