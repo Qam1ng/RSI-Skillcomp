@@ -126,3 +126,27 @@ def test_collect_writes_ledger_and_blames_first_failed_skill(tmp_path):
     case = casestore.read(tmp_path / "c.jsonl")[0]
     assert case.skill == "place_into" and case.stage == "move_place"
     assert case.kind == "in_envelope"  # PRE 满足却没兑现效果：技能分内的锅
+
+
+def test_vla_eval_commands_and_log_parse():
+    from skillcomp import vla_eval
+    cfg = vla_eval.OpenpiConfig()
+    sc = vla_eval.server_command(cfg)
+    assert "serve_policy.py" in sc and f"CUDA_VISIBLE_DEVICES={cfg.server_gpu}" in sc
+    ec = vla_eval.eval_command("libero_goal", 3, "out1", cfg)
+    # 契约：EGL 双变量同卡、LIBERO 配置路径、预算参数
+    assert f"MUJOCO_EGL_DEVICE_ID={cfg.client_gpu}" in ec
+    assert "LIBERO_CONFIG_PATH=" in ec and "--args.num-trials-per-task 3" in ec
+
+    log = "\n".join([
+        "INFO:root:Task: open the drawer",
+        "INFO:root:# successes: 1 (100.0%)",
+        "INFO:root:# successes: 1 (50.0%)",
+        "INFO:root:Task: turn on the stove",
+        "INFO:root:# successes: 2 (66.7%)",
+        "INFO:root:# successes: 3 (75.0%)",
+    ])
+    r = vla_eval.parse_log(log, "libero_goal", 2)
+    assert r.successes == 3 and r.total == 4 and abs(r.rate - 0.75) < 1e-9
+    assert r.per_task["open the drawer"] == (1, 2)
+    assert r.per_task["turn on the stove"] == (2, 2)
