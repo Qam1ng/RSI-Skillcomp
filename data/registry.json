@@ -1,0 +1,32 @@
+{
+ "batteries": [
+  {
+   "name": "task@goal2",
+   "suite": "libero_goal_task",
+   "task_id": 2,
+   "seeds": [
+    56,
+    57,
+    58,
+    59,
+    60
+   ],
+   "benchmark": "libero-pro",
+   "notes": ""
+  }
+ ],
+ "floors": [
+  {
+   "battery": "task@goal2",
+   "scores": [
+    5,
+    5,
+    5
+   ],
+   "total": 5,
+   "measured_at": "2026-10-26",
+   "provenance": "rsi_cal0..2",
+   "floor": 0
+  }
+ ]
+}
