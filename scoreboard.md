@@ -18,3 +18,4 @@
 | 2026-10-21 | 纯宏整任务重放 5/5（带录像），steps 214–238 | libero_goal_task/2，seeds 56–60，seeded，零 API，ucla GPU2 | ~/skillcomp_data/demo_pure3/（视频在 videos/）；journal/20261021_demo_videos.md |
 | 2026-10-25 | 带条件核查的纯宏整任务 5/5：PRE 事前核查 + EFF 事后核查在沙箱内运行期执行，裕度为连续量（抓取深度 0.114 m、松开裕度 0.586） | libero_goal_task/2，冻结种子 56–60，经执行模块 exec_aspire 发批（首次无手敲 ssh），零 API | verify_checked2/batch-results.jsonl（ucla）；journal/20261025_fill_gaps.md |
 | 2026-10-25 | 新契约规则：沙箱禁止下划线开头的名字（整程序被拒），实测一轮即定位 | verify_checked1 全批 program_error → 修名后 5/5 | macros/substrate_contract_aspire.md 第 13 条 |
+| 2026-10-25 | π0.5 载体点火：pi05_libero（12.4 GB）服务端起监听，客户端按 websocket 协议收到 (10,7) 动作块 | ucla GPU1，openpi 官方环境；坑两枚实测（系统 gsutil 是同名假货→匿名 gcsfs；fsspec 递归下载嵌套一层目录） | pi05_serve2.log、journal/20261025_fill_gaps.md |
