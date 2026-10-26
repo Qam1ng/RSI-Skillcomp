@@ -21,6 +21,14 @@ class CheckSpec:
 
 
 REGISTRY: dict[str, CheckSpec] = {
+    "vla_act": CheckSpec(
+        skill="vla_act",
+        # EFF：episode 被判定器终止 = 任务级完成（terminated 即成功，契约第 6 条）
+        post_code=(
+            'report["check_{ret}_eff_done"] = bool({ret}.terminated)\n'
+            'report["margin_{ret}_steps"] = int({ret}.steps_executed)\n'
+        ),
+    ),
     "pick_object": CheckSpec(
         skill="pick_object",
         post_code=(

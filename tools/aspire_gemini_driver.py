@@ -89,16 +89,20 @@ def extract_code(text: str) -> str:
     return m.group(1)
 
 
-def run_episode(aspire: Path, suite: str, task_id: int, seed: int, program: Path, out: Path) -> Path:
+def run_episode(aspire: Path, suite: str, task_id: int, seed: int, program: Path, out: Path,
+                osc: bool = False) -> Path:
     env_setup = (
         f'cd {aspire} && source .venv-libero/bin/activate && '
         f'export LIBERO_CONFIG_PATH="$PWD/.libero" TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 '
         f'MUJOCO_GL=egl PYOPENGL_PLATFORM=egl EGL_PLATFORM=device '
         f'CUDA_VISIBLE_DEVICES=2 MUJOCO_EGL_DEVICE_ID=2 && '
     )
+    if osc:
+        env_setup += 'export CAP_LIBERO_CONTROLLER=OSC_POSE && '
+    cam = ' --camera-width 256 --camera-height 256' if osc else ''
     cmd = (env_setup + f'cap-harness run --benchmark libero-pro --suite {suite} '
            f'--task-id {task_id} --seed {seed} --program {program} '
-           f'--no-videos --output-root {out} --flat-run-dir')
+           f'--no-videos --output-root {out} --flat-run-dir{cam}')
     subprocess.run(["bash", "-c", cmd], check=False, capture_output=True, text=True, timeout=1800)
     runs = sorted((out / f"{seed:04d}").glob("run-*"), key=lambda p: p.name)
     if not runs:
@@ -159,6 +163,10 @@ def main() -> int:
     ap.add_argument("--macro", action="append", default=[],
                     help="已验证宏的 .py 文件，可重复。签名+PRE/EFF 进提示目录，"
                          "实现由驱动在执行前拼到程序头部（口1 注入）")
+    ap.add_argument("--extra-doc", action="append", default=[],
+                    help="附加说明文件（如 vla_act 技能卡片），原文进提示")
+    ap.add_argument("--osc", action="store_true",
+                    help="OSC_POSE 集：VLA 技能模式（256x256 相机，几何运动 API 不可用）")
     args = ap.parse_args()
 
     key = os.environ.get("GEMINI_API_KEY")
@@ -174,6 +182,8 @@ def main() -> int:
     for ex in args.example:
         examples.append("=== WORKING EXAMPLE (a DIFFERENT task; copy its API usage patterns, "
                         "not its goal) ===\n```python\n" + Path(ex).read_text() + "\n```")
+    for doc in args.extra_doc:
+        examples.append(Path(doc).read_text())
 
     macro_srcs, macro_cards, macro_names = [], [], set()
     for mp in args.macro:
@@ -222,7 +232,8 @@ def main() -> int:
             exec_prog.write_text("\n\n".join(macro_srcs) + "\n\n" + agent_code)
         else:
             exec_prog = prog
-        run_dir = run_episode(aspire, args.suite, args.task_id, args.seed, exec_prog, out / "runs")
+        run_dir = run_episode(aspire, args.suite, args.task_id, args.seed, exec_prog, out / "runs",
+                              osc=args.osc)
         outcome = json.loads((run_dir / "outcome.json").read_text())
         ok = bool(outcome["task_success"])
         meter["rounds"][-1].update({"run_dir": str(run_dir), "task_success": ok,
