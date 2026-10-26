@@ -1,0 +1,1 @@
+{"skill": "pi05_libero", "version": 1, "battery": "libero_goal@trials3_seed7", "passes": 29, "total": 30, "ts": "2026-10-25", "margins": {}, "cost": {"rollouts": 30, "gpu": "A6000x2"}, "note": "Gate1 slice: openpi examples/libero client vs official 98.0%; videos at ucla vla_eval1/videos; 1 failure: open_the_middle_drawer"}

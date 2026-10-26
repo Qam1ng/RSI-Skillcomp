@@ -19,3 +19,4 @@
 | 2026-10-25 | 带条件核查的纯宏整任务 5/5：PRE 事前核查 + EFF 事后核查在沙箱内运行期执行，裕度为连续量（抓取深度 0.114 m、松开裕度 0.586） | libero_goal_task/2，冻结种子 56–60，经执行模块 exec_aspire 发批（首次无手敲 ssh），零 API | verify_checked2/batch-results.jsonl（ucla）；journal/20261025_fill_gaps.md |
 | 2026-10-25 | 新契约规则：沙箱禁止下划线开头的名字（整程序被拒），实测一轮即定位 | verify_checked1 全批 program_error → 修名后 5/5 | macros/substrate_contract_aspire.md 第 13 条 |
 | 2026-10-25 | π0.5 载体点火：pi05_libero（12.4 GB）服务端起监听，客户端按 websocket 协议收到 (10,7) 动作块 | ucla GPU1，openpi 官方环境；坑两枚实测（系统 gsutil 是同名假货→匿名 gcsfs；fsspec 递归下载嵌套一层目录） | pi05_serve2.log、journal/20261025_fill_gaps.md |
+| 2026-10-26 | **Gate 1 首片通过：π0.5（pi05_libero）亲自执行 29/30=96.7%**，官方口径 98.0%（n=30 抽样期望 29.4/30，口径吻合）；逐集视频存证，唯一失败（开中层抽屉）成为 VLA 病历第一条候选 | libero_goal × 每任务 3 回合，seed 7，openpi 官方评测客户端，服务端 GPU1 + 仿真 GPU2，零 API | vla_eval1.log 与 videos/（ucla）；data/ledger.jsonl 首条 VLA 台账 |
