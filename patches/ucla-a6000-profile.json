@@ -1,0 +1,19 @@
+{
+  "schema": "cap-harness/profile/1",
+  "name": "ucla-a6000",
+  "arch": "sm_86",
+  "description": "UCLA shared node; all providers pinned to GPU 2 (RTX A6000 48G), conservative concurrency.",
+  "venv_root": null,
+  "gpus": {
+    "sam3": 2,
+    "contact_graspnet": 2,
+    "curobo": 2
+  },
+  "concurrency": {
+    "sam3": 1,
+    "contact_graspnet": 1,
+    "pyroki": 4,
+    "curobo": 1
+  },
+  "ports": {}
+}

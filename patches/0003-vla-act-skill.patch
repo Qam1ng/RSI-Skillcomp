@@ -1,0 +1,295 @@
+diff --git a/src/cap_harness/api.py b/src/cap_harness/api.py
+index 0b74fe3..f1de14b 100644
+--- a/src/cap_harness/api.py
++++ b/src/cap_harness/api.py
+@@ -1528,6 +1528,72 @@ class CapApi:
+                 break
+         return result
+ 
++    def vla_act(
++        self,
++        prompt: str,
++        max_steps: int = 240,
++        replan_steps: int = 5,
++    ) -> ExecutionResult:
++        """Delegate control to the configured VLA policy server for one sub-task."""
++        if not isinstance(prompt, str) or not prompt.strip():
++            return ExecutionResult(
++                ok=False, steps_executed=0,
++                error=ApiError(code=ErrorCode.INVALID_REQUEST,
++                               message="prompt must be a non-empty string"))
++        if (type(max_steps) is not int or max_steps <= 0
++                or type(replan_steps) is not int or replan_steps <= 0):
++            return ExecutionResult(
++                ok=False, steps_executed=0,
++                error=ApiError(code=ErrorCode.INVALID_REQUEST,
++                               message="max_steps and replan_steps must be positive ints"))
++        if getattr(self._adapter, "controller", None) != "OSC_POSE" or not hasattr(
++                self._adapter, "vla_native_step"):
++            return ExecutionResult(
++                ok=False, steps_executed=0,
++                error=ApiError(code=ErrorCode.UNSUPPORTED,
++                               message="vla_act requires an OSC_POSE-mode LIBERO adapter"))
++        try:
++            from cap_harness.vla_client import VlaPolicyClient, compose_libero_observation
++            client = VlaPolicyClient.shared()
++        except Exception as exc:
++            return ExecutionResult(
++                ok=False, steps_executed=0,
++                error=ApiError(code=ErrorCode.UNSUPPORTED,
++                               message=f"vla client unavailable: {exc}",
++                               details={"exception_type": type(exc).__name__}))
++        steps = 0
++        terminated = truncated = False
++        try:
++            while steps < max_steps and not terminated and not truncated:
++                raw = self._adapter.raw_native_observation
++                if raw is None:
++                    return ExecutionResult(
++                        ok=False, steps_executed=steps,
++                        error=ApiError(code=ErrorCode.ADAPTER_FAILED,
++                                       message="no native observation available"))
++                chunk = client.infer(compose_libero_observation(raw, prompt))
++                for action in chunk[:replan_steps]:
++                    terminated, truncated = self._adapter.vla_native_step(
++                        np.asarray(action))
++                    steps += 1
++                    if terminated or truncated or steps >= max_steps:
++                        break
++        except Exception as exc:
++            return ExecutionResult(
++                ok=False, steps_executed=steps,
++                error=ApiError(code=ErrorCode.ADAPTER_FAILED,
++                               message=f"vla_act failed: {exc}",
++                               details={"exception_type": type(exc).__name__}))
++        # 契约：终止/截断的执行不得自称 ok（成功即截断的收尾惯例同 move 调用）。
++        # 程序侧以 result.terminated 作为"任务级完成"的信号。
++        ended = terminated or truncated
++        return ExecutionResult(
++            ok=not ended, steps_executed=steps,
++            terminated=terminated, truncated=truncated,
++            error=self._terminal_error(terminated, truncated) if ended else None,
++            diagnostics={"prompt": prompt, "replan_steps": replan_steps,
++                         "policy": "vla-server", "episode_ended": ended})
++
+     def register_tools(self, registry: ToolRegistry) -> ToolRegistry:
+         """Register only approved public methods and metadata extensions."""
+         tools = {
+@@ -1555,6 +1621,7 @@ class CapApi:
+             "open_gripper": ("shared_high_level", "control"),
+             "close_gripper": ("shared_high_level", "control"),
+             "go_home": ("shared_high_level", "execution"),
++            "vla_act": ("shared_high_level", "control"),
+         }
+         for name, (layer, capability) in tools.items():
+             registry.register(
+diff --git a/src/cap_harness/libero/adapter.py b/src/cap_harness/libero/adapter.py
+index a50e0a4..1671c50 100644
+--- a/src/cap_harness/libero/adapter.py
++++ b/src/cap_harness/libero/adapter.py
+@@ -193,8 +193,10 @@ class LiberoAdapter:
+             raise ValueError("controller must be a non-empty string")
+         if init_mode not in ("saved", "seeded"):
+             raise ValueError("init_mode must be 'saved' or 'seeded'")
+-        if controller != "JOINT_POSITION":
+-            raise ValueError("LiberoAdapter requires the JOINT_POSITION controller")
++        if controller not in ("JOINT_POSITION", "OSC_POSE"):
++            raise ValueError(
++                "LiberoAdapter requires the JOINT_POSITION or OSC_POSE controller"
++            )
+         try:
+             max_opening = float(gripper_max_opening_m)
+         except (TypeError, ValueError) as exc:
+@@ -335,6 +337,14 @@ class LiberoAdapter:
+             spec = spec()
+         if hasattr(spec, "low") and hasattr(spec, "high"):
+             spec = (spec.low, spec.high)
++        if self.controller != "JOINT_POSITION":
++            low = np.asarray(spec[0], dtype=np.float64).reshape(-1)
++            high = np.asarray(spec[1], dtype=np.float64).reshape(-1)
++            if (low.size != high.size or low.size == 0
++                    or not (np.isfinite(low).all() and np.isfinite(high).all())
++                    or bool(np.any(low > high))):
++                raise ValueError("invalid native action_spec")
++            return low.copy(), high.copy()
+         return LiberoActionCodec.validate_action_spec(spec)
+ 
+     def _close_environment(self) -> None:
+@@ -399,7 +409,7 @@ class LiberoAdapter:
+             if self._raw_observation is None:
+                 raise RuntimeError("cannot settle without a raw observation")
+             normalized_gripper = self._normalized_gripper(self._raw_observation)
+-            native_action = np.zeros(LIBERO_ACTION_DIMENSION, dtype=np.float64)
++            native_action = np.zeros(int(self._action_bounds[0].size) if self._action_bounds is not None else LIBERO_ACTION_DIMENSION, dtype=np.float64)
+             native_action[-1] = LiberoActionCodec.normalized_gripper_to_native(normalized_gripper)
+             if self._action_bounds is None:  # pragma: no cover - established at env creation
+                 raise RuntimeError("LIBERO action bounds are unavailable")
+@@ -435,7 +445,7 @@ class LiberoAdapter:
+             # randomization -- which is what previously pinned all 50 seeds to one
+             # scene -- so seeded mode applies no saved state at all.
+             state_index = None
+-        elif not init_states:
++        elif len(init_states) == 0:
+             raise ValueError(
+                 f"{metadata.task_ref} ships no saved init states, so init_mode "
+                 "'saved' cannot select a layout; use init_mode 'seeded'"
+@@ -651,6 +661,10 @@ class LiberoAdapter:
+     def native_step(self, action: RobotAction) -> StepResult:
+         """Runtime-only step retaining native reward and sanitized-at-boundary info."""
+         env = self._require_env()
++        if self.controller != "JOINT_POSITION":
++            raise ValueError(
++                "joint-space step is unavailable under OSC_POSE; use vla_act"
++            )
+         if action.embodiment != self.embodiment:
+             raise ValueError(
+                 f"action embodiment {action.embodiment!r} does not match {self.embodiment!r}"
+@@ -717,6 +731,38 @@ class LiberoAdapter:
+             self._run_observer.after_step(action, result)
+         return result
+ 
++
++    @property
++    def raw_native_observation(self) -> Mapping[str, Any] | None:
++        """Runtime-only access to the latest native observation mapping."""
++        return self._raw_observation
++
++    def vla_native_step(self, native_action: np.ndarray) -> tuple[bool, bool]:
++        """Advance one control period with a raw native-space action (OSC_POSE only).
++
++        Runtime-only: returns (terminated, truncated); failures raise.
++        """
++        env = self._require_env()
++        if self.controller != "OSC_POSE":
++            raise ValueError("vla_native_step requires the OSC_POSE controller")
++        if self._action_bounds is None:  # pragma: no cover - established at env creation
++            raise RuntimeError("LIBERO action bounds are unavailable")
++        action_array = np.asarray(native_action, dtype=np.float64).reshape(-1)
++        expected = int(self._action_bounds[0].size)
++        if action_array.size != expected:
++            raise ValueError(f"native action must have {expected} dims")
++        action_array = np.clip(action_array, *self._action_bounds)
++        native_result = env.step(action_array)
++        self._elapsed_steps += 1
++        (
++            self._raw_observation,
++            self._last_reward,
++            self._last_terminated,
++            self._last_truncated,
++            self._last_native_info,
++        ) = self._unpack_native_result(native_result)
++        return bool(self._last_terminated), bool(self._last_truncated)
++
+     def step(self, action: RobotAction) -> StepResult:
+         """Advance exactly one native control period and return a public result."""
+         runtime_result = self.native_step(action)
+@@ -743,6 +789,10 @@ class LiberoAdapter:
+                 f"trajectory embodiment {trajectory.embodiment!r} "
+                 f"does not match {self.embodiment!r}"
+             )
++        if self.controller != "JOINT_POSITION":
++            raise ValueError(
++                "trajectory execution is unavailable under OSC_POSE; use vla_act"
++            )
+         if trajectory.arm != PRIMARY_ARM:
+             raise ValueError("LIBERO trajectories must target the 'primary' arm")
+         if not np.isclose(trajectory.dt_s, self.control_period_s, rtol=0.0, atol=1e-9):
+diff --git a/src/cap_harness/registry.py b/src/cap_harness/registry.py
+index 61195fd..75e0ae9 100644
+--- a/src/cap_harness/registry.py
++++ b/src/cap_harness/registry.py
+@@ -19,6 +19,7 @@ SHARED_PUBLIC_TOOL_NAMES = frozenset(
+         "get_robot_state",
+         "get_task_context",
+         "go_home",
++        "vla_act",
+         "localize_object",
+         "mask_to_point_cloud",
+         "move_to_joints",
+diff --git a/src/cap_harness/run.py b/src/cap_harness/run.py
+index 58276b1..1d2fc55 100644
+--- a/src/cap_harness/run.py
++++ b/src/cap_harness/run.py
+@@ -245,6 +245,8 @@ def run_program(
+             }
+             if benchmark == "libero-pro":
+                 adapter_kwargs["init_mode"] = init_mode
++                if os.environ.get("CAP_LIBERO_CONTROLLER"):
++                    adapter_kwargs["controller"] = os.environ["CAP_LIBERO_CONTROLLER"]
+             if benchmark == "yam_real":
+                 from .yam_real.station import build_real_station
+ 
+diff --git a/src/cap_harness/vla_client.py b/src/cap_harness/vla_client.py
+new file mode 100644
+index 0000000..b7f3f47
+--- /dev/null
++++ b/src/cap_harness/vla_client.py
+@@ -0,0 +1,68 @@
++"""Minimal openpi policy-server client for vla_act (local patch #3).
++
++Observation recipe copied from openpi examples/libero/main.py so the policy
++sees exactly its training-time inputs: both camera images flipped then
++resize_with_pad to 224, uint8; 8-dim state = eef pos (3) + quat->axis-angle (3)
+++ gripper qpos (2).
++"""
++from __future__ import annotations
++
++import math
++import os
++from typing import Any, Mapping
++
++import numpy as np
++
++
++class VlaPolicyClient:
++    _instance = None
++
++    @classmethod
++    def shared(cls) -> "VlaPolicyClient":
++        if cls._instance is None:
++            cls._instance = cls()
++        return cls._instance
++
++    def __init__(self) -> None:
++        from openpi_client import websocket_client_policy
++
++        host = os.environ.get("CAP_VLA_HOST", "127.0.0.1")
++        port = int(os.environ.get("CAP_VLA_PORT", "8000"))
++        self._client = websocket_client_policy.WebsocketClientPolicy(host=host, port=port)
++
++    def infer(self, element: Mapping[str, Any]) -> np.ndarray:
++        return np.asarray(self._client.infer(dict(element))["actions"])
++
++
++def _quat2axisangle(quat: np.ndarray) -> np.ndarray:
++    # Copied from robosuite transform_utils (via openpi examples/libero).
++    quat = np.array(quat, dtype=np.float64, copy=True)
++    if quat[3] > 1.0:
++        quat[3] = 1.0
++    elif quat[3] < -1.0:
++        quat[3] = -1.0
++    den = np.sqrt(1.0 - quat[3] * quat[3])
++    if math.isclose(float(den), 0.0):
++        return np.zeros(3)
++    return (quat[:3] * 2.0 * math.acos(quat[3])) / den
++
++
++def compose_libero_observation(raw: Mapping[str, Any], prompt: str,
++                               resize: int = 224) -> dict[str, Any]:
++    from openpi_client import image_tools
++
++    img = np.ascontiguousarray(np.asarray(raw["agentview_image"])[::-1, ::-1])
++    wrist = np.ascontiguousarray(np.asarray(raw["robot0_eye_in_hand_image"])[::-1, ::-1])
++    img = image_tools.convert_to_uint8(image_tools.resize_with_pad(img, resize, resize))
++    wrist = image_tools.convert_to_uint8(image_tools.resize_with_pad(wrist, resize, resize))
++    state = np.concatenate([
++        np.asarray(raw["robot0_eef_pos"], dtype=np.float32).reshape(-1),
++        _quat2axisangle(np.asarray(raw["robot0_eef_quat"], dtype=np.float64)).astype(np.float32),
++        np.asarray(raw["robot0_gripper_qpos"], dtype=np.float32).reshape(-1),
++    ])
++    return {
++        "observation/image": img,
++        "observation/wrist_image": wrist,
++        "observation/state": state,
++        "prompt": str(prompt),
++    }
