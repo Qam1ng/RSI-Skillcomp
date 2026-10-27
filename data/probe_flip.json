@@ -1,0 +1,41 @@
+{
+ "probe": "counterfactual_flip",
+ "model": "gemini-flash-latest",
+ "needle_truth": "split",
+ "failure": "pick_object v5 on task 'put the tray on the shelf': 4/5 seeds failed at the grasp descend stage. The tray is a FLAT object. Use-conditions (visible and reachable) were satisfied on every failure. Failure margins cluster tightly (grasp height below table by 0.01-0.02 m on all flat-object cases; non-flat objects unaffected).",
+ "arms": [
+  {
+   "arm": "no_needle",
+   "n": 5,
+   "decisions": {
+    "retry": 0,
+    "refine": 3,
+    "split": 2,
+    "unparsed": 0
+   },
+   "cited_needle": 0
+  },
+  {
+   "arm": "with_needle",
+   "n": 5,
+   "decisions": {
+    "retry": 0,
+    "refine": 0,
+    "split": 5,
+    "unparsed": 0
+   },
+   "cited_needle": 5
+  },
+  {
+   "arm": "empty_context",
+   "n": 5,
+   "decisions": {
+    "retry": 0,
+    "refine": 0,
+    "split": 5,
+    "unparsed": 0
+   },
+   "cited_needle": 0
+  }
+ ]
+}
