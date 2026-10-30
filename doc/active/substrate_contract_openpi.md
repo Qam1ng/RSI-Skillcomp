@@ -39,3 +39,28 @@
 
 全量认证 = 每任务 50 回合复刻整表。评测发射统一走
 `skillcomp/vla_eval.py`，不再手敲。
+
+## 动作语义的证据链（2026-10-30 核验）
+
+**结论：7 维动作里，前 6 维是增量（delta），第 7 维夹爪是目标指令、不是增量。**
+
+四环证据，每环可独立复核：
+
+1. **环境的控制器是 OSC_POSE**：LIBERO 的 env（bddl_base_domain.py）对
+   controller_configs 默认 None 原样透传 robosuite，robosuite 单臂环境的
+   默认控制器即 OSC_POSE；openpi 评测客户端建 env 时未指定控制器，走的
+   就是这个默认。
+2. **OSC_POSE 是增量语义**（robosuite v1.4.0，LIBERO 钉死的版本）：
+   `osc_pose.json` 原文 `"control_delta": true`，输入 [-1,1]，缩放到每步
+   `output_max = [0.05,0.05,0.05, 0.5,0.5,0.5]`——即平移每步最多 ±5 cm、
+   旋转每步最多 ±0.5 rad 的**位姿增量**。新版 robosuite 同义字段为
+   `"input_type": "delta"`。
+3. **策略输出直通 env.step**：openpi examples/libero/main.py 中
+   `action = action_plan.popleft()` 后直接喂 env——策略输出与上述增量
+   动作空间同构，无任何中间变换。
+4. **夹爪维不是增量**：cap-harness 控制器元数据（libero/extensions.py）
+   原文 `"native": "1=closed, -1=open"`——第 7 维是开/合目标指令。
+
+待 ucla 恢复后的实证探针（把文献证据升级为实测）：打印一个真实动作块的
+数值幅度（应全在 [-1,1]）；连续喂零动作应保持静止（增量语义），若机械臂
+弹回原点则为绝对语义——二选一，一集定案。
