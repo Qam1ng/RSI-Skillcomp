@@ -1,0 +1,237 @@
+{
+  "$type": "ExecutionResult",
+  "diagnostics": {
+    "joint_target_converged": true,
+    "orientation_error_rad": 0.008680736144914302,
+    "position_error_m": 0.0038729589448626475,
+    "trajectory_executed": true
+  },
+  "error": null,
+  "final_errors": {
+    "primary": 0.0038729589448626475
+  },
+  "final_observation": {
+    "$type": "Observation",
+    "cameras": {
+      "agentview": {
+        "$type": "CameraObservation",
+        "camera_pose": {
+          "$type": "Pose",
+          "frame": "robot_base",
+          "position": {
+            "$array_inline": [
+              1.4965773716836135,
+              5.216182733499864e-07,
+              0.65
+            ],
+            "dtype": "float64",
+            "shape": [
+              3
+            ]
+          },
+          "quaternion_wxyz": {
+            "$array_inline": [
+              -0.34323072246337577,
+              0.6182166363517069,
+              0.6182176496305745,
+              -0.34323140791672757
+            ],
+            "dtype": "float64",
+            "shape": [
+              4
+            ]
+          }
+        },
+        "depth_shape": [
+          512,
+          800
+        ],
+        "frame": "camera/agentview",
+        "intrinsics": [
+          [
+            618.0386719675123,
+            0.0,
+            400.0
+          ],
+          [
+            0.0,
+            618.0386719675123,
+            256.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb_shape": [
+          512,
+          800,
+          3
+        ],
+        "timestamp_s": 1.35
+      },
+      "robot0_eye_in_hand": {
+        "$type": "CameraObservation",
+        "camera_pose": {
+          "$type": "Pose",
+          "frame": "robot_base",
+          "position": {
+            "$array_inline": [
+              0.46478164198504923,
+              -0.09590441811947051,
+              0.3510308929291771
+            ],
+            "dtype": "float64",
+            "shape": [
+              3
+            ]
+          },
+          "quaternion_wxyz": {
+            "$array_inline": [
+              -0.02015400176804611,
+              -0.7039385470052191,
+              0.709674309293358,
+              0.020657032262887662
+            ],
+            "dtype": "float64",
+            "shape": [
+              4
+            ]
+          }
+        },
+        "depth_shape": [
+          512,
+          800
+        ],
+        "frame": "camera/robot0_eye_in_hand",
+        "intrinsics": [
+          [
+            333.6256954473487,
+            0.0,
+            400.0
+          ],
+          [
+            0.0,
+            333.6256954473487,
+            256.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb_shape": [
+          512,
+          800,
+          3
+        ],
+        "timestamp_s": 1.35
+      }
+    },
+    "robot_state": {
+      "$type": "RobotState",
+      "base_frame": "robot_base",
+      "embodiment": "libero",
+      "end_effector_poses": {
+        "primary": {
+          "$type": "Pose",
+          "frame": "robot_base",
+          "position": {
+            "$array_inline": [
+              0.4092708165976367,
+              -0.09540835545548178,
+              0.25707716928481295
+            ],
+            "dtype": "float64",
+            "shape": [
+              3
+            ]
+          },
+          "quaternion_wxyz": {
+            "$array_inline": [
+              -0.0003556962740461209,
+              0.9995752366612083,
+              -0.004055796409217057,
+              -0.028857758910508235
+            ],
+            "dtype": "float64",
+            "shape": [
+              4
+            ]
+          }
+        }
+      },
+      "gripper_positions": {
+        "primary": 0.9901298068720347
+      },
+      "joint_names": {
+        "primary": [
+          "robot0_joint1",
+          "robot0_joint2",
+          "robot0_joint3",
+          "robot0_joint4",
+          "robot0_joint5",
+          "robot0_joint6",
+          "robot0_joint7"
+        ]
+      },
+      "joint_positions": {
+        "primary": {
+          "$array_inline": [
+            -0.10462003205316547,
+            -0.24921823665220072,
+            -0.12032986867886847,
+            -2.5473511925044803,
+            -0.05277814072234191,
+            2.2426136177389018,
+            0.6075452035834017
+          ],
+          "dtype": "float64",
+          "shape": [
+            7
+          ]
+        }
+      },
+      "joint_velocities": {
+        "primary": {
+          "$array_inline": [
+            -0.0021593361877430594,
+            -0.0013310912029222506,
+            -0.004035674987296133,
+            -0.0023053309056566013,
+            -0.0009603250235169693,
+            0.0001162943480138412,
+            -0.03947701545371633
+          ],
+          "dtype": "float64",
+          "shape": [
+            7
+          ]
+        }
+      },
+      "timestamp_s": 1.35
+    },
+    "task_context": {
+      "$type": "TaskContext",
+      "family": "object",
+      "language": "Pick the alphabet soup and place it in the basket",
+      "metadata": {
+        "init_mode": "seeded",
+        "init_state_count": 50,
+        "init_state_index": null,
+        "task_ref": "libero_object_swap:0"
+      },
+      "suite": "libero_object_swap",
+      "task_id": 0,
+      "task_name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket"
+    },
+    "timestamp_s": 1.35
+  },
+  "ok": true,
+  "status": "success",
+  "steps_executed": 27,
+  "terminated": false,
+  "truncated": false
+}

@@ -1,0 +1,9 @@
+{
+  "args": [
+    "put the wine bottle in the bowl"
+  ],
+  "kwargs": {
+    "max_steps": 400,
+    "replan_steps": 5
+  }
+}

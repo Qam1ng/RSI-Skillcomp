@@ -1,0 +1,76 @@
+{
+  "$type": "ProgramExecutionResult",
+  "calls": [
+    {
+      "$type": "CallTrace",
+      "duration_s": 2.681960590183735,
+      "error_message": null,
+      "error_type": null,
+      "failure_code": "terminated",
+      "frame": null,
+      "index": 0,
+      "inputs_summary": {
+        "keywords": {
+          "max_steps": {
+            "type": "int",
+            "value": 400
+          },
+          "replan_steps": {
+            "type": "int",
+            "value": 5
+          }
+        },
+        "positional": [
+          {
+            "length": 31,
+            "type": "str"
+          }
+        ]
+      },
+      "keyword_names": [
+        "max_steps",
+        "replan_steps"
+      ],
+      "ok": false,
+      "outputs_summary": {
+        "final_errors": {},
+        "ok": false,
+        "status": "terminated",
+        "steps_executed": 76,
+        "terminated": true,
+        "truncated": false,
+        "type": "ExecutionResult"
+      },
+      "positional_count": 1,
+      "provider": null,
+      "result_type": "ExecutionResult",
+      "tool": "vla_act"
+    }
+  ],
+  "error": null,
+  "ok": true,
+  "result": {
+    "$type": "ExecutionResult",
+    "diagnostics": {
+      "episode_ended": true,
+      "policy": "vla-server",
+      "prompt": "put the wine bottle in the bowl",
+      "replan_steps": 5
+    },
+    "error": {
+      "$type": "ApiError",
+      "code": "terminated",
+      "details": {},
+      "message": "episode terminated before control completed",
+      "recoverable": true
+    },
+    "final_errors": {},
+    "final_observation": null,
+    "ok": false,
+    "status": "terminated",
+    "steps_executed": 76,
+    "terminated": true,
+    "truncated": false
+  },
+  "stdout": "{'vla_steps': 76, 'episode_ended': True, 'vla_done': True}\n"
+}

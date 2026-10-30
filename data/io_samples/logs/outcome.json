@@ -1,0 +1,44 @@
+{
+  "cumulative_reward": 0.0,
+  "environment_terminated": false,
+  "environment_truncated": false,
+  "error": null,
+  "finalization_errors": [],
+  "program_ok": true,
+  "protocol_success": null,
+  "schema_version": "1.0",
+  "simulator_duration_s": 0.0,
+  "steps_executed": 0,
+  "success_observed_step": null,
+  "task_success": true,
+  "termination_description": "The environment ended after benchmark success.",
+  "termination_reason": "task_succeeded",
+  "timing": {
+    "attributed_s": 5.280076,
+    "buckets": {
+      "finalize": {
+        "calls": 1,
+        "seconds": 0.000803
+      },
+      "reset": {
+        "calls": 1,
+        "seconds": 5.278166
+      },
+      "setup": {
+        "calls": 1,
+        "seconds": 0.000264
+      },
+      "trace_write": {
+        "calls": 4,
+        "seconds": 0.00084
+      },
+      "video_encode": {
+        "calls": 1,
+        "seconds": 3e-06
+      }
+    },
+    "unattributed_s": 2.909021,
+    "wall_s": 8.189097
+  },
+  "wall_duration_s": 8.18909714370966
+}

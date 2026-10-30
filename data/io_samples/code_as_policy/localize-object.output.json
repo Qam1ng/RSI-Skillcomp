@@ -1,0 +1,71 @@
+{
+  "$type": "LocalizationResult",
+  "diagnostics": {},
+  "error": null,
+  "geometry": {
+    "$type": "ObjectGeometry",
+    "extents": {
+      "$array_inline": [
+        0.10731892401855636,
+        0.39814809954145725,
+        0.09591568866242522
+      ],
+      "dtype": "float64",
+      "shape": [
+        3
+      ]
+    },
+    "point_count": 1471,
+    "pose": {
+      "$type": "Pose",
+      "frame": "robot_base",
+      "position": {
+        "$array_inline": [
+          0.45249844706480574,
+          -0.08153047116529735,
+          0.07262150770137632
+        ],
+        "dtype": "float64",
+        "shape": [
+          3
+        ]
+      },
+      "quaternion_wxyz": {
+        "$array_inline": [
+          0.29953226109541325,
+          -0.3524399550098605,
+          -0.5330086732295725,
+          -0.7084971820252834
+        ],
+        "dtype": "float64",
+        "shape": [
+          4
+        ]
+      }
+    }
+  },
+  "ok": true,
+  "point_cloud": {
+    "$type": "PointCloud",
+    "frame": "robot_base",
+    "has_colors": true,
+    "point_count": 1471
+  },
+  "segmentation": {
+    "$type": "Segmentation",
+    "box_xyxy": [
+      342.2281494140625,
+      201.04049682617188,
+      377.6683044433594,
+      250.87103271484375
+    ],
+    "camera_name": "agentview",
+    "frame": "camera/agentview",
+    "label": "blue soup can",
+    "mask_shape": [
+      512,
+      800
+    ],
+    "score": 0.75
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$type": "ExecutionResult",
+  "diagnostics": {
+    "episode_ended": true,
+    "policy": "vla-server",
+    "prompt": "put the wine bottle in the bowl",
+    "replan_steps": 5
+  },
+  "error": {
+    "$type": "ApiError",
+    "code": "terminated",
+    "details": {},
+    "message": "episode terminated before control completed",
+    "recoverable": true
+  },
+  "final_errors": {},
+  "final_observation": null,
+  "ok": false,
+  "status": "terminated",
+  "steps_executed": 76,
+  "terminated": true,
+  "truncated": false
+}

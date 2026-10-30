@@ -1,0 +1,39 @@
+{
+  "benchmark": "libero-pro",
+  "capture": {
+    "camera_height": 256,
+    "camera_width": 256,
+    "max_steps": 1000,
+    "profile": "no_videos",
+    "videos": false
+  },
+  "environment_sha256": null,
+  "finished_at": "2026-10-26T22:02:17.640108Z",
+  "init_mode": "seeded",
+  "providers": {
+    "grasping": [
+      "contact-graspnet"
+    ],
+    "ik": [
+      "pyroki",
+      "curobo"
+    ],
+    "pose_planning": [
+      "composed",
+      "curobo-integrated"
+    ],
+    "segmentation": "sam3",
+    "trajectory_planning": [
+      "interpolation",
+      "curobo"
+    ]
+  },
+  "run_id": "run-20261026T220209.449841Z-50c8b105",
+  "schema_version": "1.0",
+  "seed": 56,
+  "started_at": "2026-10-26T22:02:09.450570Z",
+  "status": "finalized",
+  "suite": "libero_goal_task",
+  "task_id": 2,
+  "task_name": "put_the_wine_bottle_on_top_of_the_cabinet"
+}
