@@ -77,3 +77,74 @@ token/集**；Direct 更是 1,132M/50 集。
 - 这两篇已占据"frontier VLM 直接/混合控制"的发表先机；我们的空间在
   **积累与摊销**（他们明确没做），动作要快。
 - 真机安全事故提示：任何把 VLM 放进控制环的方案都要写安全章节。
+
+## V. Parameter audit: the 22.48% vs 6.91% headline (added 2026-11-03, verbatim re-read)
+
+Conclusion: the numbers are reported correctly, but the comparison is NOT a
+controlled experiment. Key findings, each traceable to paper text:
+
+### Provenance
+
+- All 40 learned-policy rows (incl. Pi-05 11.41 Score / 6.91% SR, DM0.5
+  24.90 / 19.34%) are a **2026-09-10 public-leaderboard snapshot**, not runs
+  by the authors; cells "were not re-run alongside the LLM-controller
+  columns" (App. H). Paper 1 states nothing about who trained the leaderboard
+  pi0.5, on what data, or its runtime config (chunk length, replan cadence,
+  control Hz, cameras — all absent; presumably in the benchmark paper
+  arXiv 2607.04434, which we have not read).
+- Paper 2's "pure pi0.5 15.67%" on RoboDojo is **also not a run**: it is the
+  published pi0.5 results *reweighted* to their 10-task mixture — a mixture
+  deliberately stratified toward pi0.5-weak tasks (6 of 10 from the lowest
+  published-SR interval). The benchmark releases task-finetuned pi0.5
+  weights; Hybrid uses those.
+- RoboLab (Direct 98% vs pi0.5 36%): pi0.5 is zero-shot DROID-trained
+  weights; Astra was allowed repeat attempts (two Direct episodes got a
+  500-decision budget vs the standard 180) — an Astra-only allowance.
+
+### Known runtime parameters, per side (Paper 1, Direct)
+
+| Parameter | GPT-6 Astra Direct | Pi-05 (leaderboard row) |
+|---|---|---|
+| Provenance | authors' run: 42 tasks x 50 eps = 2,100 trials, single seed | leaderboard snapshot, not re-run |
+| Training | frozen commercial model, zero robot training | unknown (benchmark releases task-finetuned weights per Paper 2) |
+| Observation | 3 RGB (head + both wrists; resolution not stated), images kept for last 2 turns only, full text history; 14-dim grasp-point state + 12 read-only joint angles as text; arrival-error feedback | not stated in Paper 1; benchmark spec per Paper 2: head + both wrists 640x480, 14-dim proprioception |
+| Extra input | wiki task recipe + process-score ladder (authors concede input asymmetry) | task instruction only |
+| Action output | one move_eef per turn: subset of 14 world-frame absolute dims (x,y,z,pitch,roll,yaw,gripper per arm); bounds in App. A | action chunks; Paper 2 shows 50x14 joint-space chunks (as exposed in Hybrid); executed-steps-per-chunk and replan cadence NOT stated in either paper |
+| Expansion / control | non-learned: validate -> IK -> joint path -> resample 25 Hz; waypoint count varies with travel | 25 Hz control (benchmark spec) |
+| Time | turn-based; env steps consumed in proportion to motion distance; physics pause during deliberation implied (Paper 2 states pausing explicitly for its own settings) | real-time chunked execution |
+| Budget | 100 model calls/ep + env-step cap (value unpublished); successful probe episodes 14-25 calls | zero LLM calls |
+| Aggregation | Score = mean process reward x 100; headline = unweighted mean over 5 axes (micro: 472/2,100 = 22.48% SR) | 6.91% = same axis-mean convention |
+
+### Per-axis SR (%) — the single number hides reversals
+
+| Axis | Astra | Pi-05 | DM0.5 |
+|---|---|---|---|
+| Generalization | 30.50 | 8.17 | 10.95 |
+| Precision | **4.00** | 5.50 | 16.75 |
+| Long-Horizon | **8.25** | 14.67 | 19.50 |
+| Memory | 38.67 | 4.56 | 47.44 |
+| Open | 31.00 | 1.67 | 2.08 |
+
+- Pi-05 **beats Astra on Precision and Long-Horizon**; Astra's entire lead
+  comes from Open / Memory / Generalization.
+- DM0.5 beats Astra on 3 of 5 axes (Precision, Long-Horizon, Memory); on the
+  40-row leaderboard proper, DM0.5 ranks #1.
+- Revised insight: mechanism-2's advantage is concentrated in semantic /
+  open-ended / generalization axes, not in motor competence. "Astra wins
+  out-of-distribution" must be stated per-axis, never as one number.
+
+### Fairness caveats the authors themselves list (App. H)
+
+Input asymmetry (wiki recipe); stale snapshot baselines; "the per-episode
+call budget is a condition, not a neutral setting"; single evaluation seed,
+no variance estimates; contamination unquantified; interface as measurement
+boundary (move_eef cannot express continuous-contact behaviour; RGB-only may
+cap precision; image_horizon=2 confounds the Memory axis).
+
+### Implication for our experiment plan
+
+No matched-variable comparison of mechanism-2 vs mechanism-5 exists in
+either paper (different inputs, budgets, time conditions, provenance). Our
+planned B-arm (Gemini-as-Astra on our harness: same tasks, same seeds, same
+executor as the vla_act arm) would be the first controlled version of this
+comparison, at Gemini scale.
