@@ -141,6 +141,25 @@ no variance estimates; contamination unquantified; interface as measurement
 boundary (move_eef cannot express continuous-contact behaviour; RGB-only may
 cap precision; image_horizon=2 confounds the Memory axis).
 
+### Identity of DM0.5 (added 2026-11-04, from HF model cards)
+
+DM0.5 = "DM05", Dexmal's open-source VLA foundation model (successor of DM0;
+released 2026-07-09; no arXiv paper, only a tech blog; license: gemma).
+Architecture: Gemma 3 4B VLM backbone + 680M action expert (~6B total),
+continuous action chunks — structurally the pi0 family (mechanism 5), though
+the cards never state flow matching vs diffusion. The leaderboard entry is
+DM05-MEM-Robodojo-Sim (2026-08-26): fine-tuned on RoboDojo sim (demo count
+unstated), ARX X5 bimanual, 3 RGB cameras, outputs 50-step x 14-dim
+**absolute joint-position** chunks, eval adapter executes the first 25 steps
+per chunk (N=50, H=25; control Hz unstated). MEM = up to 20 head-camera
+history frames at 1 FPS (~20 s of history; media reports of "60 s" are not
+on the card). Reading: the board's #1 is not a new mechanism — it is
+mechanism 5 plus task finetuning plus an explicit history window, which is
+exactly why Astra's Memory-axis lead holds against zero-history pi0.5
+(38.67 vs 4.56) but flips against DM0.5-MEM (38.67 vs 47.44). Capability
+gaps here trace to harness/input differences (history window), not to the
+generation mechanism.
+
 ### Implication for our experiment plan
 
 No matched-variable comparison of mechanism-2 vs mechanism-5 exists in
