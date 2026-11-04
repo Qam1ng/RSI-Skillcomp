@@ -127,6 +127,14 @@ controlled experiment. Key findings, each traceable to paper text:
 
 - Pi-05 **beats Astra on Precision and Long-Horizon**; Astra's entire lead
   comes from Open / Memory / Generalization.
+- Full Precision column check (2026-11-04, Table 5, all 43 rows): Astra's
+  4.00% SR ranks **19/43** — 18 of the 40 learned policies are strictly
+  above it (top: GalaxeaVLA-G0.5 20.42, Xiaomi-Robotics-1 18.83, DM0.5
+  16.75), 22 strictly below (mostly rows near 0 overall). So: Precision is
+  Astra's own weakest axis and it loses to the entire strong half of the
+  learned field there, but it is NOT bottom-of-board — "worst tier" would
+  be an overclaim. Note also the ceiling: the best Precision SR on the
+  whole board is only 20.42%.
 - DM0.5 beats Astra on 3 of 5 axes (Precision, Long-Horizon, Memory); on the
   40-row leaderboard proper, DM0.5 ranks #1.
 - Revised insight: mechanism-2's advantage is concentrated in semantic /
