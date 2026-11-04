@@ -1,14 +1,26 @@
 # RSI-Skillcomp
 
-A plug-in layer for LLM robot harnesses. It watches which step sequences keep
-succeeding, merges them into bigger skills with explicit use-conditions, and
-hands those back to the planner. Plans get shorter as experience accumulates;
-if a condition breaks mid-run, the big skill falls back to its original small
-steps.
+Robot systems today have hands (VLAs — excellent in-distribution motion) and
+heads (frozen VLM harnesses — execution-time reasoning). What no deployed
+system has is the mechanism that turns its own execution experience into
+**permanent** capability: in every VLA pipeline that step is still a human,
+who watches failures, decides whether to retrain or fork a skill, runs the
+training, verifies, deploys. Execution-time harnesses don't close it either —
+their corrections die with the episode's context, so the 100th episode costs
+exactly what the 1st did.
 
-这是一个外挂层，不是一个新 harness。它观察哪些步骤序列反复跑通，把它们合并成
-"带使用条件的大技能"，再交还给规划者。经验越多、计划越短；执行中条件不满足时，
-大技能会拆回原来的小步骤重试。
+**This repo builds that missing layer**: between episodes it attributes each
+failure (caller's fault / within the skill's envelope / outside it), decides
+one of three ways — retry (zero training) / refine (continue this expert's
+LoRA) / split (fork a new expert with a new applicability condition) — under
+real rollout budgets (frozen batteries, noise floors, bounded evidence
+rounds), and appends every verified product to a versioned skill library.
+Capability accumulates, per-task cost falls, nothing is overwritten.
+
+Layer 1 (motion: VLAs, code macros) and Layer 2 (in-episode harness decisions)
+are consumed, not contributed; the contribution is Layer 3 — the
+between-episode learning loop. Pipeline diagram with per-box I/O:
+https://claude.ai/artifact/5ncGNKy7asS9WF64ZanE82
 
 ## Pipeline
 
