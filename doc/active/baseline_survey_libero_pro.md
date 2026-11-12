@@ -69,18 +69,41 @@ Top-5 static: MolmoAct2 71.2, Cosmos Policy 70.8, LingBot-VA 68.7,
 dead — the "VLAs collapse to zero" story is specific to v1's Position/Task
 axes and the agentic protocol.
 
-### 2d. Other agentic entries on some LIBERO-Pro protocol
+### 2d. VLM-planner + VLA-executor entries on LIBERO-Pro (adversarial
+re-check 2026-11-12: THE SLOT IS OCCUPIED — full texts fetched)
 
-- **Harness VLA** (arXiv:2607.08448): "+38.6 and +25.4 percentage points on
-  LIBERO-Pro" over strongest baselines (abstract; absolute SRs not yet
-  extracted). Its 800-episode Task/Swap board (paperswithcode.co mirror,
-  reliability caveat) lists GPT-6-Astra 98.25 (UNVERIFIED against the linked
-  paper 2610.22471), TinyAstral-4B 71.5, AgenticRoboRL-Qwen3.5-9B 71.0.
-- **ChunkAct** (arXiv:2610.18874): "+5.0 points over the state of the art in
-  agentic robotics" with "2.9x fewer LLM calls, 4.4x fewer input tokens,
-  2.3x fewer output tokens" (abstract). Absolute 78.8 vs 83.8 UNVERIFIED.
-  The call-efficiency axis is now occupied — our 54->6 dispatch-amortization
-  claim must cite and compare against this.
+- **S2** ("See Less, Specify More: Visual Evidence Budgets for Generalizable
+  VLAs", arXiv:2606.02735) — the CLEAN counterexample. "an off-the-shelf VLM
+  provides local subtask guidance" (S3.3); "The planner never outputs robot
+  actions directly" (App B.1); "all experiments instantiate S2 with a
+  pi0.5-based executor" (S4.1). Planners: Kimi K2.5 (default), GPT-5.4 nano.
+  Full LIBERO-PRO perturbation breakdown (Table 1), e.g. libero_spatial
+  Obj/Pos/Sem/Task = 99.0/55.0/90.5/54.5 (Kimi K2.5).
+- **Harness VLA** (arXiv:2607.08448v5) — hybrid executor, full text fetched:
+  "For contact-rich phases, it invokes a frozen VLA through a single learned
+  primitive, vla_act" (S1); "the agentic planner selects structured calls
+  from a fixed primitive library rather than emitting low-level actions
+  directly" (Fig 1); analytic primitives move_to / rotate_wrist /
+  set_gripper / release; frozen VLA = RLinf "pi05_libero130_fullshot"
+  pi0.5-SFT checkpoint (piRLinf). Planners: Codex GPT-5.5 72.1, Claude Code
+  Opus-4.7 82.4, **GPT-6 Astra 92.63 (741/800, Table 21)** on the
+  800-episode Task/Swap protocol (8 cells x 10 tasks x 10 seeds, App C.2).
+  Flat baselines same protocol (Table 3): OpenVLA 0.0, pi0 0.3, pi0.5 11.0,
+  MolmoAct 1.5, X-VLA 3.8, piRLinf 50.0. (The mirror-board 98.25 belongs to
+  a different paper, 2610.22471 — still unverified.)
+- **ChunkAct** (arXiv:2610.18874) — same hybrid pattern, confirmed from full
+  text: "An agentic system solves a manipulation task with an LLM planner"
+  (S3.1); "delegating contact-rich stages such as grasping or fixture
+  actuation to the VLA policy" (S3.2); "The VLA primitive is piRLinf"
+  (S4.1). Planner GPT-5.6-sol high reasoning. LIBERO-Pro 83.8 overall TSR
+  vs Harness VLA 78.8 (Table 1); LIBERO-Plus zero-shot 83.9 vs 72.9
+  strongest flat VLA (Table 3). Call-efficiency axis occupied: 2.9x fewer
+  LLM calls, 4.4x/2.3x fewer input/output tokens — our dispatch-amortization
+  claim must compare against this.
+- **HiRoC** (arXiv:2608.05999, LIBERO-Plus): fine-tuned Qwen2.5-VL-3B
+  planner (LoRA) + OpenVLA-OFT executor; "best generalization across all
+  perturbation types" on LIBERO-Plus (numbers in Figure 3 only); vanilla
+  LIBERO 93.5 avg / Long 98.0.
 - **RPG** (arXiv:2610.02204): own 22-task suite (not LIBERO-Pro): 95.0% after
   15 practice rounds vs ASPIRE 75.5% and CaP-Agent0 60.0% on the same suite.
   Only other system with a direct head-to-head vs ASPIRE.
@@ -133,13 +156,30 @@ axes and the agentic protocol.
   self-improvement, LIBERO 91.8->99.2 w/ OpenVLA), RoboMonkey (test-time
   sample-N, LIBERO-Long 49.8->56.5).
 
-## 4. The open slot and the redefined baseline set
+## 4. The open slot (corrected 2026-11-12) and the redefined baseline set
 
-**No hierarchical VLM planner + VLA executor system reports LIBERO-Pro
-numbers** (searched explicitly, 2026-11-12). Every agentic entry above
-executes through code/APIs (ASPIRE, WAA, RATS, CaP) or is a pure VLA. Our
-pivoted design (VLM plans, VLA executes, library grows by failure
-attribution) fills a measured-empty slot.
+RETRACTION: the earlier claim "no hierarchical VLM planner + VLA executor
+system reports LIBERO-Pro numbers" is FALSE — S2, Harness VLA and ChunkAct
+all do (Section 2d). What still holds, verified:
+
+- LIBERO-Pro2.0's own 17-policy leaderboard contains no hierarchical
+  system (all flat policies; the only LLM use is demo generation).
+- RoboDojo-Sim has no confirmed VLM-planner + VLA-executor entry
+  (leaderboard snapshot lists only flat policies; one GPT-6 Astra rumor via
+  ChunkAct's intro could not be located).
+- Frontier planners HAVE been paired with VLA executors: Harness VLA runs
+  GPT-6 Astra (92.63) and Claude Opus 4.7 (82.4) over vla_act. The
+  "frontier models only drive IK/code" reading is therefore also dead.
+- The genuinely open slot is now narrower and sharper: **a GROWING skill
+  library over a VLA-included carrier set, grown by execution-failure
+  attribution**. Harness VLA's library is explicitly FIXED ("a fixed
+  primitive library"); ChunkAct optimizes calls, no library growth; S2 has
+  no library; Skill2Real GROWS a library but its executor is pure code/API
+  ("learns executable skills through a shared application programming
+  interface (API)" — no VLA anywhere in the paper); WAA grows a library,
+  no VLA; ASPIRE grows a library, code executor. Nobody combines
+  between-episode library growth with VLA execution, and nobody applies
+  refine/split verdicts from failure clustering to a VLA-carrier skill.
 
 Redefined baseline table (rows we must report against):
 
@@ -151,8 +191,14 @@ Redefined baseline table (rows we must report against):
 4. WAA — 75.6 — current main-suite SOTA; cite (no code).
 5. Skill2Real — 56.3 Long zero-shot — the number to beat on the live
    battlefield; deep read pending.
-6. ChunkAct — the call-efficiency comparator for our amortization claim.
-7. Naive VLM+VLA loop (our own ablation arm) — justified by the -12pp
+6. **Harness VLA — 92.63 w/ GPT-6 Astra on Task/Swap-800** — the fixed
+   -library hybrid our growing library must beat like-for-like; it is also
+   the published validation that planner + vla_act works.
+7. ChunkAct — 83.8 LIBERO-Pro / 83.9 LIBERO-Plus — the call-efficiency
+   comparator for our amortization claim.
+8. S2 — the no-library VLM->pi0.5 subtask-guidance arm (clean LIBERO-Pro
+   per-axis numbers to cite).
+9. Naive VLM+VLA loop (our own ablation arm) — justified by the -12pp
    result in VLAs-as-Tools.
 
 Strategic readings:
